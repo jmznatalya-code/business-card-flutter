@@ -5,18 +5,26 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// ── Palette ──────────────────────────────────────────────────────────────────
+const _kGold = Color(0xFFC8A96E);
+const _kGoldLight = Color(0xFFF5EDD8);
+const _kGoldDim = Color(0xFFE8D5B0);
+const _kCream = Color(0xFFFAF9F5);
+const _kWhite = Color(0xFFFFFFFF);
+const _kInk = Color(0xFF1C1917);
+const _kMuted = Color(0xFF78716C);
+const _kBorder = Color(0xFFEDE8DF);
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-    ),
-  );
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark,
+  ));
   runApp(const BusinessCardApp());
 }
 
-// ─── App Root ────────────────────────────────────────────────────────────────
+// ─── App ─────────────────────────────────────────────────────────────────────
 
 class BusinessCardApp extends StatelessWidget {
   const BusinessCardApp({super.key});
@@ -28,24 +36,46 @@ class BusinessCardApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2563EB),
-          brightness: Brightness.light,
+        scaffoldBackgroundColor: _kCream,
+        colorScheme: ColorScheme.light(
+          primary: _kGold,
+          onPrimary: _kWhite,
+          surface: _kWhite,
+          onSurface: _kInk,
         ),
-        scaffoldBackgroundColor: const Color(0xFFF1F5F9),
-        fontFamily: 'Roboto',
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
+          backgroundColor: _kWhite,
           elevation: 0,
-          scrolledUnderElevation: 1,
-          shadowColor: Color(0x1A000000),
+          scrolledUnderElevation: 0.5,
+          shadowColor: _kBorder,
+          iconTheme: IconThemeData(color: _kInk),
           titleTextStyle: TextStyle(
-            color: Color(0xFF0F172A),
-            fontSize: 18,
+            fontFamily: 'Georgia',
+            color: _kInk,
+            fontSize: 17,
             fontWeight: FontWeight.w600,
-            letterSpacing: -0.3,
+            letterSpacing: 0.4,
           ),
-          iconTheme: IconThemeData(color: Color(0xFF0F172A)),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: _kWhite,
+          labelStyle: const TextStyle(color: _kMuted, fontSize: 13),
+          floatingLabelStyle: const TextStyle(color: _kGold, fontSize: 13),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: _kBorder),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: _kBorder),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: _kGold, width: 1.5),
+          ),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         ),
       ),
       home: const BusinessCardPage(),
@@ -53,18 +83,13 @@ class BusinessCardApp extends StatelessWidget {
   }
 }
 
-// ─── Data Model ──────────────────────────────────────────────────────────────
+// ─── Data ─────────────────────────────────────────────────────────────────────
 
-class CardData {
-  String name;
-  String occupation;
-  String phone;
-  String email;
-  String address;
-  String bio;
+class _Card {
+  String name, occupation, phone, email, address, bio;
   String? imagePath;
 
-  CardData({
+  _Card({
     this.name = '',
     this.occupation = '',
     this.phone = '',
@@ -74,34 +99,32 @@ class CardData {
     this.imagePath,
   });
 
-  static Future<CardData> load() async {
-    final prefs = await SharedPreferences.getInstance();
-    return CardData(
-      name: prefs.getString('bc_name') ?? '',
-      occupation: prefs.getString('bc_occupation') ?? '',
-      phone: prefs.getString('bc_phone') ?? '',
-      email: prefs.getString('bc_email') ?? '',
-      address: prefs.getString('bc_address') ?? '',
-      bio: prefs.getString('bc_bio') ?? '',
-      imagePath: prefs.getString('bc_imagePath'),
+  static Future<_Card> load() async {
+    final p = await SharedPreferences.getInstance();
+    return _Card(
+      name: p.getString('bc_name') ?? '',
+      occupation: p.getString('bc_occupation') ?? '',
+      phone: p.getString('bc_phone') ?? '',
+      email: p.getString('bc_email') ?? '',
+      address: p.getString('bc_address') ?? '',
+      bio: p.getString('bc_bio') ?? '',
+      imagePath: p.getString('bc_imagePath'),
     );
   }
 
   Future<void> save() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('bc_name', name);
-    await prefs.setString('bc_occupation', occupation);
-    await prefs.setString('bc_phone', phone);
-    await prefs.setString('bc_email', email);
-    await prefs.setString('bc_address', address);
-    await prefs.setString('bc_bio', bio);
-    if (imagePath != null) {
-      await prefs.setString('bc_imagePath', imagePath!);
-    }
+    final p = await SharedPreferences.getInstance();
+    await p.setString('bc_name', name);
+    await p.setString('bc_occupation', occupation);
+    await p.setString('bc_phone', phone);
+    await p.setString('bc_email', email);
+    await p.setString('bc_address', address);
+    await p.setString('bc_bio', bio);
+    if (imagePath != null) await p.setString('bc_imagePath', imagePath!);
   }
 }
 
-// ─── Page ────────────────────────────────────────────────────────────────────
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 class BusinessCardPage extends StatefulWidget {
   const BusinessCardPage({super.key});
@@ -110,209 +133,195 @@ class BusinessCardPage extends StatefulWidget {
   State<BusinessCardPage> createState() => _BusinessCardPageState();
 }
 
-class _BusinessCardPageState extends State<BusinessCardPage>
-    with SingleTickerProviderStateMixin {
-  CardData _data = CardData();
-  bool _isEditing = false;
-  bool _isLoading = true;
+class _BusinessCardPageState extends State<BusinessCardPage> {
+  _Card _data = _Card();
+  bool _editing = false;
+  bool _loading = true;
 
-  late final TextEditingController _nameCtrl;
-  late final TextEditingController _occupationCtrl;
-  late final TextEditingController _phoneCtrl;
-  late final TextEditingController _emailCtrl;
-  late final TextEditingController _addressCtrl;
-  late final TextEditingController _bioCtrl;
-  late final AnimationController _animCtrl;
-  late final Animation<double> _fadeAnim;
+  final _nameCtrl = TextEditingController();
+  final _occCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _addrCtrl = TextEditingController();
+  final _bioCtrl = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _nameCtrl = TextEditingController();
-    _occupationCtrl = TextEditingController();
-    _phoneCtrl = TextEditingController();
-    _emailCtrl = TextEditingController();
-    _addressCtrl = TextEditingController();
-    _bioCtrl = TextEditingController();
-
-    _animCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 220),
-    );
-    _fadeAnim = CurvedAnimation(parent: _animCtrl, curve: Curves.easeInOut);
-
-    _loadData();
+    _load();
   }
 
   @override
   void dispose() {
-    _nameCtrl.dispose();
-    _occupationCtrl.dispose();
-    _phoneCtrl.dispose();
-    _emailCtrl.dispose();
-    _addressCtrl.dispose();
-    _bioCtrl.dispose();
-    _animCtrl.dispose();
+    for (final c in [_nameCtrl, _occCtrl, _phoneCtrl, _emailCtrl, _addrCtrl, _bioCtrl]) {
+      c.dispose();
+    }
     super.dispose();
   }
 
-  Future<void> _loadData() async {
-    final data = await CardData.load();
+  Future<void> _load() async {
+    final d = await _Card.load();
     setState(() {
-      _data = data;
-      _syncControllers();
-      _isLoading = false;
+      _data = d;
+      _sync();
+      _loading = false;
     });
-    _animCtrl.forward();
   }
 
-  void _syncControllers() {
+  void _sync() {
     _nameCtrl.text = _data.name;
-    _occupationCtrl.text = _data.occupation;
+    _occCtrl.text = _data.occupation;
     _phoneCtrl.text = _data.phone;
     _emailCtrl.text = _data.email;
-    _addressCtrl.text = _data.address;
+    _addrCtrl.text = _data.address;
     _bioCtrl.text = _data.bio;
   }
 
-  void _startEditing() {
-    setState(() => _isEditing = true);
-  }
-
-  Future<void> _saveEdits() async {
+  Future<void> _save() async {
     setState(() {
-      _data.name = _nameCtrl.text.trim();
-      _data.occupation = _occupationCtrl.text.trim();
-      _data.phone = _phoneCtrl.text.trim();
-      _data.email = _emailCtrl.text.trim();
-      _data.address = _addressCtrl.text.trim();
-      _data.bio = _bioCtrl.text.trim();
-      _isEditing = false;
+      _data
+        ..name = _nameCtrl.text.trim()
+        ..occupation = _occCtrl.text.trim()
+        ..phone = _phoneCtrl.text.trim()
+        ..email = _emailCtrl.text.trim()
+        ..address = _addrCtrl.text.trim()
+        ..bio = _bioCtrl.text.trim();
+      _editing = false;
     });
     await _data.save();
   }
 
-  void _cancelEditing() {
-    _syncControllers();
-    setState(() => _isEditing = false);
+  void _cancel() {
+    _sync();
+    setState(() => _editing = false);
   }
 
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final XFile? file = await picker.pickImage(
+  Future<void> _pickPhoto() async {
+    final f = await ImagePicker().pickImage(
       source: ImageSource.gallery,
       maxWidth: 1000,
       maxHeight: 1000,
-      imageQuality: 90,
+      imageQuality: 88,
     );
-    if (file != null) {
-      setState(() => _data.imagePath = file.path);
-    }
+    if (f != null) setState(() => _data.imagePath = f.path);
   }
 
-  // ── Build ──────────────────────────────────────────────────────────────────
+  // ─── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Business Card'),
-        actions: _isLoading
+        title: const Text('BUSINESS CARD'),
+        centerTitle: true,
+        actions: _loading
             ? null
             : [
-                if (_isEditing) ...[
+                if (_editing)
                   TextButton(
-                    onPressed: _cancelEditing,
-                    child: const Text(
-                      'Cancel',
-                      style: TextStyle(color: Color(0xFF64748B)),
-                    ),
-                  ),
-                  TextButton.icon(
-                    onPressed: _saveEdits,
-                    icon: const Icon(Icons.check_rounded,
-                        size: 18, color: Color(0xFF2563EB)),
-                    label: const Text(
-                      'Save',
-                      style: TextStyle(
-                        color: Color(0xFF2563EB),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ] else
+                    onPressed: _cancel,
+                    child: const Text('Cancel',
+                        style: TextStyle(color: _kMuted, fontSize: 14)),
+                  )
+                else
                   IconButton(
-                    icon: const Icon(Icons.edit_outlined),
+                    icon: const Icon(Icons.edit_outlined, size: 20),
                     tooltip: 'Edit',
-                    onPressed: _startEditing,
+                    onPressed: () => setState(() => _editing = true),
                   ),
               ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: _kBorder),
+        ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : FadeTransition(
-              opacity: _fadeAnim,
-              child: _isEditing ? _buildEditView() : _buildCardView(),
+      body: _loading
+          ? const Center(
+              child: CircularProgressIndicator(color: _kGold),
+            )
+          : AnimatedSwitcher(
+              duration: const Duration(milliseconds: 260),
+              child: _editing
+                  ? _EditView(
+                      key: const ValueKey('edit'),
+                      data: _data,
+                      nameCtrl: _nameCtrl,
+                      occCtrl: _occCtrl,
+                      phoneCtrl: _phoneCtrl,
+                      emailCtrl: _emailCtrl,
+                      addrCtrl: _addrCtrl,
+                      bioCtrl: _bioCtrl,
+                      onPickPhoto: _pickPhoto,
+                      onSave: _save,
+                    )
+                  : _CardView(
+                      key: const ValueKey('view'),
+                      data: _data,
+                    ),
             ),
     );
   }
+}
 
-  // ── Card View ──────────────────────────────────────────────────────────────
+// ─── Card View ────────────────────────────────────────────────────────────────
 
-  Widget _buildCardView() {
-    final bool hasAnyContact =
-        _data.phone.isNotEmpty || _data.email.isNotEmpty || _data.address.isNotEmpty;
-    final bool isEmpty = _data.name.isEmpty &&
-        _data.occupation.isEmpty &&
-        !hasAnyContact &&
-        _data.bio.isEmpty;
+class _CardView extends StatelessWidget {
+  final _Card data;
+  const _CardView({super.key, required this.data});
 
+  bool get _isEmpty =>
+      data.name.isEmpty &&
+      data.occupation.isEmpty &&
+      data.phone.isEmpty &&
+      data.email.isEmpty &&
+      data.address.isEmpty &&
+      data.bio.isEmpty;
+
+  @override
+  Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
       child: Column(
         children: [
-          // ── Main Card ──────────────────────────────────────────────────────
-          _CardSurface(
+          // ── Card surface ───────────────────────────────────────────────────
+          _Surface(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header: photo + name/occupation
+                // Header
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _PhotoWidget(
-                      imagePath: _data.imagePath,
-                      size: 88,
-                      editable: false,
-                    ),
-                    const SizedBox(width: 16),
+                    _Photo(path: data.imagePath, size: 84, editable: false),
+                    const SizedBox(width: 18),
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 4),
+                        padding: const EdgeInsets.only(top: 2),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              _data.name.isEmpty ? 'Your Name' : _data.name,
+                              data.name.isEmpty ? 'Your Name' : data.name,
                               style: TextStyle(
-                                fontSize: 22,
+                                fontFamily: 'Georgia',
+                                fontSize: 20,
                                 fontWeight: FontWeight.bold,
-                                color: _data.name.isEmpty
-                                    ? const Color(0xFFCBD5E1)
-                                    : const Color(0xFF0F172A),
-                                letterSpacing: -0.4,
+                                color: data.name.isEmpty
+                                    ? const Color(0xFFD6CFC7)
+                                    : _kInk,
                                 height: 1.2,
+                                letterSpacing: -0.2,
                               ),
                             ),
-                            if (_data.occupation.isNotEmpty) ...[
-                              const SizedBox(height: 4),
+                            if (data.occupation.isNotEmpty) ...[
+                              const SizedBox(height: 5),
                               Text(
-                                _data.occupation,
+                                data.occupation,
                                 style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Color(0xFF2563EB),
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: 0.1,
+                                  fontSize: 13,
+                                  color: _kGold,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.8,
                                 ),
                               ),
                             ],
@@ -323,31 +332,42 @@ class _BusinessCardPageState extends State<BusinessCardPage>
                   ],
                 ),
 
-                // Contact info
-                if (hasAnyContact) ...[
+                // Gold rule
+                if (data.phone.isNotEmpty ||
+                    data.email.isNotEmpty ||
+                    data.address.isNotEmpty ||
+                    data.bio.isNotEmpty) ...[
                   const SizedBox(height: 20),
-                  const _Divider(),
+                  const _GoldRule(),
                   const SizedBox(height: 16),
-                  if (_data.phone.isNotEmpty)
-                    _InfoRow(icon: Icons.phone_outlined, text: _data.phone),
-                  if (_data.email.isNotEmpty)
-                    _InfoRow(icon: Icons.mail_outline_rounded, text: _data.email),
-                  if (_data.address.isNotEmpty)
-                    _InfoRow(
-                        icon: Icons.location_on_outlined, text: _data.address),
                 ],
 
+                // Contact rows
+                if (data.phone.isNotEmpty)
+                  _ContactRow(icon: Icons.phone_outlined, text: data.phone),
+                if (data.email.isNotEmpty)
+                  _ContactRow(icon: Icons.mail_outline, text: data.email),
+                if (data.address.isNotEmpty)
+                  _ContactRow(
+                      icon: Icons.location_on_outlined, text: data.address),
+
                 // Bio
-                if (_data.bio.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  const _Divider(),
-                  const SizedBox(height: 16),
+                if (data.bio.isNotEmpty) ...[
+                  if (data.phone.isNotEmpty ||
+                      data.email.isNotEmpty ||
+                      data.address.isNotEmpty)
+                    const SizedBox(height: 4),
+                  if (data.phone.isNotEmpty ||
+                      data.email.isNotEmpty ||
+                      data.address.isNotEmpty)
+                    const _GoldRule(),
+                  const SizedBox(height: 14),
                   Text(
-                    _data.bio,
+                    data.bio,
                     style: const TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF475569),
-                      height: 1.65,
+                      fontSize: 13.5,
+                      color: _kMuted,
+                      height: 1.7,
                     ),
                   ),
                 ],
@@ -355,32 +375,27 @@ class _BusinessCardPageState extends State<BusinessCardPage>
             ),
           ),
 
-          // ── Empty state hint ───────────────────────────────────────────────
-          if (isEmpty) ...[
+          // ── Empty hint ────────────────────────────────────────────────────
+          if (_isEmpty) ...[
             const SizedBox(height: 16),
-            _CardSurface(
-              color: const Color(0xFFEFF6FF),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: _kGoldLight,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _kGoldDim),
+              ),
               child: Row(
                 children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFDBEAFE),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(Icons.edit_note_rounded,
-                        color: Color(0xFF2563EB), size: 20),
-                  ),
-                  const SizedBox(width: 14),
-                  const Expanded(
+                  const Icon(Icons.info_outline, color: _kGold, size: 18),
+                  const SizedBox(width: 12),
+                  Expanded(
                     child: Text(
-                      'Tap the edit icon above to fill in your business card details.',
+                      'Tap the edit icon in the top-right to fill in your card.',
                       style: TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF3B82F6),
-                        height: 1.4,
-                      ),
+                          fontSize: 13,
+                          color: _kGold.withOpacity(0.85),
+                          height: 1.4),
                     ),
                   ),
                 ],
@@ -391,82 +406,66 @@ class _BusinessCardPageState extends State<BusinessCardPage>
       ),
     );
   }
+}
 
-  // ── Edit View ──────────────────────────────────────────────────────────────
+// ─── Edit View ────────────────────────────────────────────────────────────────
 
-  Widget _buildEditView() {
+class _EditView extends StatelessWidget {
+  final _Card data;
+  final TextEditingController nameCtrl, occCtrl, phoneCtrl, emailCtrl,
+      addrCtrl, bioCtrl;
+  final VoidCallback onPickPhoto;
+  final VoidCallback onSave;
+
+  const _EditView({
+    super.key,
+    required this.data,
+    required this.nameCtrl,
+    required this.occCtrl,
+    required this.phoneCtrl,
+    required this.emailCtrl,
+    required this.addrCtrl,
+    required this.bioCtrl,
+    required this.onPickPhoto,
+    required this.onSave,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 40),
+      padding: const EdgeInsets.fromLTRB(20, 28, 20, 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Photo picker
-          Center(
-            child: _PhotoWidget(
-              imagePath: _data.imagePath,
-              size: 120,
-              editable: true,
-              onTap: _pickImage,
-            ),
-          ),
+          Center(child: _Photo(path: data.imagePath, size: 110, editable: true, onTap: onPickPhoto)),
           const SizedBox(height: 28),
 
-          // Fields card
-          _CardSurface(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+          // Form
+          _Surface(
+            padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
             child: Column(
               children: [
-                _Field(
-                  controller: _nameCtrl,
-                  label: 'Full Name',
-                  icon: Icons.person_outline_rounded,
-                  textCapitalization: TextCapitalization.words,
-                ),
-                _Field(
-                  controller: _occupationCtrl,
-                  label: 'Occupation / Title',
-                  icon: Icons.work_outline_rounded,
-                  textCapitalization: TextCapitalization.words,
-                ),
-                _Field(
-                  controller: _phoneCtrl,
-                  label: 'Phone',
-                  icon: Icons.phone_outlined,
-                  keyboardType: TextInputType.phone,
-                ),
-                _Field(
-                  controller: _emailCtrl,
-                  label: 'Email',
-                  icon: Icons.mail_outline_rounded,
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                _Field(
-                  controller: _addressCtrl,
-                  label: 'Address',
-                  icon: Icons.location_on_outlined,
-                  maxLines: 2,
-                ),
-                _Field(
-                  controller: _bioCtrl,
-                  label: 'Bio',
-                  icon: Icons.notes_rounded,
-                  maxLines: 5,
-                  isLast: true,
-                ),
+                _Field(ctrl: nameCtrl, label: 'Full Name', icon: Icons.person_outline, caps: TextCapitalization.words),
+                _Field(ctrl: occCtrl, label: 'Occupation / Title', icon: Icons.work_outline, caps: TextCapitalization.words),
+                _Field(ctrl: phoneCtrl, label: 'Phone', icon: Icons.phone_outlined, type: TextInputType.phone),
+                _Field(ctrl: emailCtrl, label: 'Email', icon: Icons.mail_outline, type: TextInputType.emailAddress),
+                _Field(ctrl: addrCtrl, label: 'Address', icon: Icons.location_on_outlined, maxLines: 2),
+                _Field(ctrl: bioCtrl, label: 'Bio', icon: Icons.notes_rounded, maxLines: 5),
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
           // Save button
           SizedBox(
             width: double.infinity,
             height: 52,
             child: ElevatedButton(
-              onPressed: _saveEdits,
+              onPressed: onSave,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2563EB),
-                foregroundColor: Colors.white,
+                backgroundColor: _kGold,
+                foregroundColor: _kWhite,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -475,9 +474,9 @@ class _BusinessCardPageState extends State<BusinessCardPage>
               child: const Text(
                 'Save Card',
                 style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.2,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.8,
                 ),
               ),
             ),
@@ -488,17 +487,15 @@ class _BusinessCardPageState extends State<BusinessCardPage>
   }
 }
 
-// ─── Reusable Widgets ─────────────────────────────────────────────────────────
+// ─── Shared Widgets ───────────────────────────────────────────────────────────
 
-class _CardSurface extends StatelessWidget {
+class _Surface extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
-  final Color color;
 
-  const _CardSurface({
+  const _Surface({
     required this.child,
     this.padding = const EdgeInsets.all(20),
-    this.color = Colors.white,
   });
 
   @override
@@ -507,12 +504,13 @@ class _CardSurface extends StatelessWidget {
       width: double.infinity,
       padding: padding,
       decoration: BoxDecoration(
-        color: color,
+        color: _kWhite,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _kBorder),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 16,
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
@@ -522,14 +520,14 @@ class _CardSurface extends StatelessWidget {
   }
 }
 
-class _PhotoWidget extends StatelessWidget {
-  final String? imagePath;
+class _Photo extends StatelessWidget {
+  final String? path;
   final double size;
   final bool editable;
   final VoidCallback? onTap;
 
-  const _PhotoWidget({
-    required this.imagePath,
+  const _Photo({
+    required this.path,
     required this.size,
     required this.editable,
     this.onTap,
@@ -537,44 +535,40 @@ class _PhotoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool hasImage =
-        imagePath != null && File(imagePath!).existsSync();
+    final hasImage = path != null && File(path!).existsSync();
 
-    Widget photo = Container(
+    final frame = Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
+        color: _kGoldLight,
         borderRadius: BorderRadius.circular(10),
-        border: editable
-            ? Border.all(color: const Color(0xFF2563EB), width: 2)
-            : Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(
+          color: editable ? _kGold : _kGoldDim,
+          width: editable ? 1.5 : 1,
+        ),
       ),
       clipBehavior: Clip.antiAlias,
       child: hasImage
-          ? Image.file(File(imagePath!), fit: BoxFit.cover)
-          : Icon(
-              Icons.person_rounded,
-              size: size * 0.5,
-              color: const Color(0xFFCBD5E1),
-            ),
+          ? Image.file(File(path!), fit: BoxFit.cover)
+          : Icon(Icons.person_rounded, size: size * 0.48, color: _kGoldDim),
     );
 
-    if (!editable) return photo;
+    if (!editable) return frame;
 
     return GestureDetector(
       onTap: onTap,
       child: Stack(
         children: [
-          photo,
+          frame,
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
             child: Container(
-              height: size * 0.28,
+              height: size * 0.27,
               decoration: BoxDecoration(
-                color: const Color(0xFF2563EB).withOpacity(0.88),
+                color: _kGold.withOpacity(0.9),
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(8),
                   bottomRight: Radius.circular(8),
@@ -583,16 +577,16 @@ class _PhotoWidget extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.photo_camera_rounded,
-                      size: 14, color: Colors.white),
+                  const Icon(Icons.photo_camera_outlined,
+                      size: 13, color: _kWhite),
                   const SizedBox(width: 4),
                   Text(
                     hasImage ? 'Change' : 'Add Photo',
                     style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
+                        color: _kWhite,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.4),
                   ),
                 ],
               ),
@@ -604,40 +598,34 @@ class _PhotoWidget extends StatelessWidget {
   }
 }
 
-class _InfoRow extends StatelessWidget {
+class _ContactRow extends StatelessWidget {
   final IconData icon;
   final String text;
-
-  const _InfoRow({required this.icon, required this.text});
+  const _ContactRow({required this.icon, required this.text});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 11),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 32,
-            height: 32,
+            width: 30,
+            height: 30,
             decoration: BoxDecoration(
-              color: const Color(0xFFEFF6FF),
-              borderRadius: BorderRadius.circular(8),
+              color: _kGoldLight,
+              borderRadius: BorderRadius.circular(7),
             ),
-            child: Icon(icon, size: 16, color: const Color(0xFF2563EB)),
+            child: Icon(icon, size: 15, color: _kGold),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(top: 7),
-              child: Text(
-                text,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF334155),
-                  height: 1.4,
-                ),
-              ),
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(text,
+                  style: const TextStyle(
+                      fontSize: 13.5, color: _kInk, height: 1.4)),
             ),
           ),
         ],
@@ -646,75 +634,56 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
-class _Divider extends StatelessWidget {
-  const _Divider();
+class _GoldRule extends StatelessWidget {
+  const _GoldRule();
 
   @override
   Widget build(BuildContext context) {
-    return const Divider(
+    return Container(
       height: 1,
-      thickness: 1,
-      color: Color(0xFFF1F5F9),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            _kGoldDim.withOpacity(0),
+            _kGoldDim,
+            _kGoldDim.withOpacity(0),
+          ],
+        ),
+      ),
     );
   }
 }
 
 class _Field extends StatelessWidget {
-  final TextEditingController controller;
+  final TextEditingController ctrl;
   final String label;
   final IconData icon;
-  final TextInputType keyboardType;
-  final TextCapitalization textCapitalization;
+  final TextInputType type;
+  final TextCapitalization caps;
   final int maxLines;
-  final bool isLast;
 
   const _Field({
-    required this.controller,
+    required this.ctrl,
     required this.label,
     required this.icon,
-    this.keyboardType = TextInputType.text,
-    this.textCapitalization = TextCapitalization.none,
+    this.type = TextInputType.text,
+    this.caps = TextCapitalization.none,
     this.maxLines = 1,
-    this.isLast = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 16, bottom: isLast ? 0 : 0),
+      padding: const EdgeInsets.only(top: 16),
       child: TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        textCapitalization: textCapitalization,
+        controller: ctrl,
+        keyboardType: type,
+        textCapitalization: caps,
         maxLines: maxLines,
-        style: const TextStyle(
-          fontSize: 15,
-          color: Color(0xFF0F172A),
-        ),
+        style: const TextStyle(fontSize: 14.5, color: _kInk),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(
-            color: Color(0xFF94A3B8),
-            fontSize: 14,
-          ),
-          prefixIcon: Icon(icon, size: 20, color: const Color(0xFF94A3B8)),
-          filled: true,
-          fillColor: const Color(0xFFF8FAFC),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide:
-                const BorderSide(color: Color(0xFF2563EB), width: 1.5),
-          ),
+          prefixIcon: Icon(icon, size: 18, color: _kGold),
         ),
       ),
     );
