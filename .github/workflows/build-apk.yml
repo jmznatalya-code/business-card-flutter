@@ -1,7 +1,7 @@
 name: Build Flutter APK
 on:
   push:
-    branches: [main]
+    branches: [main, 'claude/**']
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   FLUTTER_TELEMETRY_OPTOUT: 1
