@@ -1,5 +1,5 @@
-name: template_app
-description: A Flutter template app
+name: business_card_app
+description: A digital business card app with editable fields
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -10,6 +10,8 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.6
+  image_picker: ^1.0.7
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:

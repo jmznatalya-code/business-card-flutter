@@ -35,6 +35,9 @@ jobs:
           flutter create --no-pub -t app temp_project
           cp lib/main.dart temp_project/lib/main.dart
           cp pubspec.yaml temp_project/pubspec.yaml
+          if [ -f android/app/src/main/AndroidManifest.xml ]; then
+            cp android/app/src/main/AndroidManifest.xml temp_project/android/app/src/main/AndroidManifest.xml
+          fi
 
       - name: Install dependencies
         working-directory: temp_project
