@@ -1,0 +1,52 @@
+name: Build Flutter APK
+on:
+  push:
+    branches: [main]
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  FLUTTER_TELEMETRY_OPTOUT: 1
+  DART_CLI_ANALYTICS: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Disable Flutter analytics
+        run: flutter config --no-analytics --no-cli-animations
+
+      - name: Create fresh Flutter project
+        run: |
+          flutter create --no-pub -t app temp_project
+          cp lib/main.dart temp_project/lib/main.dart
+          cp pubspec.yaml temp_project/pubspec.yaml
+
+      - name: Install dependencies
+        working-directory: temp_project
+        run: flutter pub get
+
+      - name: Build APK
+        working-directory: temp_project
+        run: flutter build apk --release --split-per-abi
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apks
+          path: temp_project/build/app/outputs/flutter-apk/*.apk
+          retention-days: 30
